@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+
+<dict>
+ <key>command</key>
+ <string>100 update profile</string>
+ <key>deviceId</key>
+ <string>0008</string>
+ <key>profile</key>
+ <dict>
+  <key>name</key>     <string>홍팔월</string>
+  <key>gender</key>   <string>남자</string>
+  <key>age</key>      <string>29</string>
+  <key>region</key>   <string>제주도</string>
+  <key>blood</key>    <string>B</string>
+  <key>height</key>   <integer>178</integer>
+  <key>job</key>      <string>회사원</string>
+  <key>org</key>      <string>SL전자</string>
+  <key>hobby</key>    <string>축구</string>
+  <key>skill</key>    <string>프로그래밍</string>
+  <key>interest</key> <string>외모, 성격, 몸매</string>
+  <key>superior</key> <string>성격, 스타일, 몸매</string>
+  <key>motto</key>    <string>아프니까 청춘이다</string>
+ </dict>
+</dict>
+
+</plist>
