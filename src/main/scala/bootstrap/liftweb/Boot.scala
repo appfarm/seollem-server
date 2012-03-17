@@ -139,22 +139,22 @@ object MyRest extends RestHelper {
     //sendSayYes GET sayyes [fromId] [toId]
     //sendSayNo GET sayno [fromId] [toId]
     
-    case r @ Req("users" :: Nil, "", PostRequest) => () => createUser(r)
-    case     Req("users" :: deviceId :: Nil, "", GetRequest) => () => readUser(deviceId)
-    case r @ Req("users" :: deviceId :: Nil, "", PutRequest) => () => updateUser(deviceId)
-//    case r @ Req("users" :: deviceId :: Nil, "", DeleteRequest) => () => deleteUser(deviceId)
-    case     Req("users" :: deviceId :: "photos" :: Nil, "", GetRequest) => () => readPhotosURL(deviceId)
-    case r @ Req("users" :: deviceId :: "photos" :: Nil, "", PutRequest) => () => updatePhotos(deviceId)
-    case     Req("users" :: deviceId :: "photos" :: slot :: Nil, "", GetRequest) => () => readPhotosSlot(deviceId, slot)
-    
-    case     Req("users" :: deviceId :: "relations" :: Nil, "", GetRequest) => () => readRelations(deviceId)
-    case     Req("users" :: deviceId :: "relations" :: withId :: Nil, "", GetRequest) => () => readRelations(deviceId, withId)
-    case     Req("users" :: deviceId :: "propose" :: withId :: Nil, "", PutRequest) => () => createRelations(deviceId, withId)
-    case     Req("users" :: deviceId :: "sayyes" :: withId :: Nil, "", PutRequest) => () => updateRelationsYes(deviceId, withId)
-    case     Req("users" :: deviceId :: "sayno" :: withId :: Nil, "", PutRequest) => () => updateRelationsNo(deviceId, withId)
-    case     Req("users" :: deviceId :: "relations" :: withId :: Nil, "", DeleteRequest) => () => deleteRelations(deviceId, withId)
-    
-    case     Req("users" :: deviceId :: "today3" :: Nil, "", GetRequest) => () => readRelations(deviceId)
+//     case r @ Req("users" :: Nil, "", PostRequest) => () => createUser(r)
+//     case     Req("users" :: deviceId :: Nil, "", GetRequest) => () => readUser(deviceId)
+//     case r @ Req("users" :: deviceId :: Nil, "", PutRequest) => () => updateUser(deviceId)
+// //    case r @ Req("users" :: deviceId :: Nil, "", DeleteRequest) => () => deleteUser(deviceId)
+//     case     Req("users" :: deviceId :: "photos" :: Nil, "", GetRequest) => () => readPhotosURL(deviceId)
+//     case r @ Req("users" :: deviceId :: "photos" :: Nil, "", PutRequest) => () => updatePhotos(deviceId)
+//     case     Req("users" :: deviceId :: "photos" :: slot :: Nil, "", GetRequest) => () => readPhotosSlot(deviceId, slot)
+//     
+//     case     Req("users" :: deviceId :: "relations" :: Nil, "", GetRequest) => () => readRelations(deviceId)
+//     case     Req("users" :: deviceId :: "relations" :: withId :: Nil, "", GetRequest) => () => readRelations(deviceId, withId)
+//     case     Req("users" :: deviceId :: "propose" :: withId :: Nil, "", PutRequest) => () => createRelations(deviceId, withId)
+//     case     Req("users" :: deviceId :: "sayyes" :: withId :: Nil, "", PutRequest) => () => updateRelationsYes(deviceId, withId)
+//     case     Req("users" :: deviceId :: "sayno" :: withId :: Nil, "", PutRequest) => () => updateRelationsNo(deviceId, withId)
+//     case     Req("users" :: deviceId :: "relations" :: withId :: Nil, "", DeleteRequest) => () => deleteRelations(deviceId, withId)
+//     
+//     case     Req("users" :: deviceId :: "today3" :: Nil, "", GetRequest) => () => readRelations(deviceId)
     
     // old api
     case     Req("device"  :: deviceId :: Nil, "",         DeleteRequest) => () => deleteDevice(deviceId)
