@@ -37,9 +37,9 @@ class Boot {
     if (!DB.jndiJdbcConnAvailable_?) {
       val vendor = new StandardDBVendor(
         Props.get("db.driver") openOr "org.h2.Driver",
-			  Props.get("db.url") openOr "jdbc:h2:lift_proto.db;AUTO_SERVER=TRUE",
-			  Props.get("db.user"),
-			  Props.get("db.password"))
+              Props.get("db.url") openOr "jdbc:h2:lift_proto.db;AUTO_SERVER=TRUE",
+              Props.get("db.user"),
+              Props.get("db.password"))
 
       LiftRules.unloadHooks.append(vendor.closeAllConnections_! _)
 
@@ -91,6 +91,10 @@ import net.liftweb.http.rest._
 
 
 object MyRest extends RestHelper {
+  
+  object Log extends Logger
+  Log.info("zuns00: MyRest Created...")
+  
   serve {
 
     case Req("help" :: _, "", GetRequest) => () => Full(XmlResponse(
@@ -122,21 +126,41 @@ object MyRest extends RestHelper {
     // Delete  DELETE
 
 
-    //deleteDevice	DELETE	device	[deviceId]
-    //uploadProfile	POST	profile	[deviceId]	:XMLBODY
-    //uploadPhoto	  POST	photo	[deviceId]	:BinaryBody
-    //readDevice	  GET	device	[deviceId]
-    //readProfile	  GET	profile	[deviceId]
-    //readPhotoFilename	GET	photo	[deviceId]
-    //readPhotoByFilename	GET	photo	[filename]
-    //readPhotoBySlot	GET	photo	[deviceId]	[slot#]
-    //readToday3	  GET	today3	[deviceId]
-    //sendPropose	  GET	propose	[fromId]	[toId]
-    //sendSayYes	  GET	sayyes	[fromId]	[toId]
-    //sendSayNo	    GET	sayno	[fromId]	[toId]
+    //deleteDevice DELETE device [deviceId]
+    //uploadProfile POST profile [deviceId] :XMLBODY
+    //uploadPhoto POST photo [deviceId] :BinaryBody
+    //readDevice GET device [deviceId]
+    //readProfile GET profile [deviceId]
+    //readPhotoFilename GET photo [deviceId]
+    //readPhotoByFilename GET photo [filename]
+    //readPhotoBySlot GET photo [deviceId]  [slot#]
+    //readToday3 GET today3 [deviceId]
+    //sendPropose GET propose [fromId] [toId]
+    //sendSayYes GET sayyes [fromId] [toId]
+    //sendSayNo GET sayno [fromId] [toId]
+    
+    case r @ Req("users" :: Nil, "", PostRequest) => () => createUser(r)
+    case     Req("users" :: deviceId :: Nil, "", GetRequest) => () => readUser(deviceId)
+    case r @ Req("users" :: deviceId :: Nil, "", PutRequest) => () => updateUser(deviceId)
+//    case r @ Req("users" :: deviceId :: Nil, "", DeleteRequest) => () => deleteUser(deviceId)
+    case     Req("users" :: deviceId :: "photos" :: Nil, "", GetRequest) => () => readPhotosURL(deviceId)
+    case r @ Req("users" :: deviceId :: "photos" :: Nil, "", PutRequest) => () => updatePhotos(deviceId)
+    case     Req("users" :: deviceId :: "photos" :: slot :: Nil, "", GetRequest) => () => readPhotosSlot(deviceId, slot)
+    
+    case     Req("users" :: deviceId :: "relations" :: Nil, "", GetRequest) => () => readRelations(deviceId)
+    case     Req("users" :: deviceId :: "relations" :: withId :: Nil, "", GetRequest) => () => readRelations(deviceId, withId)
+    case     Req("users" :: deviceId :: "propose" :: withId :: Nil, "", PutRequest) => () => createRelations(deviceId, withId)
+    case     Req("users" :: deviceId :: "sayyes" :: withId :: Nil, "", PutRequest) => () => updateRelationsYes(deviceId, withId)
+    case     Req("users" :: deviceId :: "sayno" :: withId :: Nil, "", PutRequest) => () => updateRelationsNo(deviceId, withId)
+    case     Req("users" :: deviceId :: "relations" :: withId :: Nil, "", DeleteRequest) => () => deleteRelations(deviceId, withId)
+    
+    case     Req("users" :: deviceId :: "today3" :: Nil, "", GetRequest) => () => readRelations(deviceId)
+    
+    // old api
     case     Req("device"  :: deviceId :: Nil, "",         DeleteRequest) => () => deleteDevice(deviceId)
     case r @ Req("profile" :: deviceId :: Nil, "",         PostRequest  ) => () => uploadProfile(r, deviceId)
     case r @ Req("photo"   :: deviceId :: Nil, "",         PostRequest  ) => () => uploadPhoto(r, deviceId)
+    case r @ Req("photo"   :: Nil, "",                     PostRequest  ) => () => uploadPhoto(r) // test iphone upload
     case     Req("device"  :: deviceId :: Nil, "",         GetRequest   ) => () => readDevice(deviceId)
     case     Req("profile" :: deviceId :: Nil, "",         GetRequest   ) => () => readProfile(deviceId)
     case     Req("json" :: "profile" :: deviceId :: Nil, "",         GetRequest   ) => readProfileJson(deviceId)
@@ -148,17 +172,17 @@ object MyRest extends RestHelper {
     case     Req("sayyes"  :: fromId   :: toId :: Nil, "", GetRequest   ) => () => sendSayYes(fromId, toId)
     case     Req("sayno"   :: fromId   :: toId :: Nil, "", GetRequest   ) => () => sendSayNo(fromId, toId)
 
-    //  1000	upload profile
-    //  1010	upload photo
-    //  1100	get device
-    //  1110	get profile
-    //  1120	get photo
-    //  1130	get today3
-    //  1200	get photo - slot
-    //  1210	get photo - filename
-    //  1300	propose
-    //  1310	say yes
-    //  1320	say no
+    //  1000    upload profile
+    //  1010    upload photo
+    //  1100    get device
+    //  1110    get profile
+    //  1120    get photo
+    //  1130    get today3
+    //  1200    get photo - slot
+    //  1210    get photo - filename
+    //  1300    propose
+    //  1310    say yes
+    //  1320    say no
 
     case request @ Req("1000" :: deviceId :: _, "", PostRequest) => () => res1000_upload_profile(request, deviceId)
     case request @ Req("1010" :: deviceId :: _, "", PostRequest) => res1010_upload_photo(request, deviceId)
@@ -190,6 +214,7 @@ object MyRest extends RestHelper {
 
   def deleteDevice(deviceId: String) : Box[LiftResponse] = {Full(XmlResponse(<todo>TODO</todo>))} //TODO: deleteDevice
   def uploadProfile(r: Req, deviceId: String) : Box[LiftResponse] = {res1000_upload_profile(r,deviceId)}
+  def uploadPhoto(r: Req) : Box[LiftResponse] = {res1010_upload_photo(r)}
   def uploadPhoto(r: Req, deviceId: String) : Box[LiftResponse] = {res1010_upload_photo(r,deviceId)}
   def readDevice(deviceId: String) : Box[LiftResponse] = {res1100_get_device(deviceId)}
   def readProfile(deviceId: String) : Box[LiftResponse] = {res1110_get_profile(deviceId)}
@@ -279,7 +304,7 @@ object MyRest extends RestHelper {
 
     // create new profile
     val reqMap = plistToMap(request.xml.get \\ "dict" \ "_")
-    val profileMap = plistToMap(reqMap.get("profile").get \\"dict" \ "_")
+    val profileMap = plistToMap(reqMap.get("profile").get \\ "dict" \ "_")
     val profile = createProfileFromXML(profileMap, device)
     device.profileId(profile)
 
@@ -300,6 +325,14 @@ object MyRest extends RestHelper {
   }
 
   // upload photo
+  def res1010_upload_photo(request: Req) : Box[LiftResponse] = {
+    // check deviceId
+    Log.debug("deviceId: " + (S.param("deviceId") openOr "empty"))
+    val deviceId = S.param("deviceId") openOr ""
+    res1010_upload_photo(request, deviceId)
+  }
+
+  // upload photo
   def res1010_upload_photo(request: Req, deviceId: String) : Box[LiftResponse] = {
     // check deviceId
     Device.findByKey(deviceId) match {
@@ -310,6 +343,7 @@ object MyRest extends RestHelper {
           case _ => new Photo
         }
 
+        Log.debug(request.uploadedFiles)
         for(fp@FileParamHolder(inputTagName, _,_,_) <- request.uploadedFiles if inputTagName.startsWith("myFile")) {
           if (fp.mimeType.startsWith("image/")) {
             device.photoCount(device.photoCount + 1)

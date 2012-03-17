@@ -1,0 +1,15 @@
+<lift:surround with="default" at="content">
+
+<form action="/photo" method="post" enctype="multipart/form-data">
+    <ul>deviceId: <input name="deviceId" type="text"/></ul>
+    <ul>photo1: <input name="myFile1" type="file"/></ul>
+    <ul>photo2: <input name="myFile2" type="file"/></ul>
+    <ul>photo3: <input name="myFile3" type="file"/></ul>
+    <ul>photo4: <input name="myFile4" type="file"/></ul>
+    <ul>photo5: <input name="myFile5" type="file"/></ul>
+    <ul>photo6: <input name="myFile6" type="file"/></ul>
+    <ul><input type="submit" value="Submit"/></ul>
+    <!-- <a href="aurup:?uploadUrl=seollem.cloudfoundry.com%2Fphoto&fields=deviceId%3D0001&licenseKey=79FF1-0006D-9A530-00008-96F4F-4545F6">Upload Images</a> -->
+</form>
+
+</lift:surround>
