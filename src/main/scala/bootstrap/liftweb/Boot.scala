@@ -11,6 +11,12 @@ import _root_.net.liftweb.mapper._
 import _root_.scala.xml._
 import net.liftweb.http._
 
+import _root_.net.liftweb.json._
+import _root_.net.liftweb.json.JsonAST.{JArray, JBool, JField, 
+                                        JInt, JObject, JString, JValue, render}
+import _root_.net.liftweb.json.JsonDSL._
+import _root_.net.liftweb.json.Printer._
+
 
 /**
  * A class that's instantiated early and run.  It allows the application
@@ -18,6 +24,15 @@ import net.liftweb.http._
  */
 class Boot {
   def boot {
+    LiftRules.supplimentalHeaders = s => s.addHeaders(
+      List(HTTPParam("X-Lift-Version", LiftRules.liftVersion),
+        HTTPParam("Access-Control-Allow-Origin", "*"),
+        HTTPParam("Access-Control-Allow-Credentials", "true"),
+        HTTPParam("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS"),
+        HTTPParam("Access-Control-Allow-Headers", "WWW-Authenticate,Keep-Alive,User-Agent,X-Requested-With,Cache-Control,Content-Type")
+    ))
+
+
 ///*
     if (!DB.jndiJdbcConnAvailable_?) {
       val vendor = new StandardDBVendor(
@@ -124,6 +139,7 @@ object MyRest extends RestHelper {
     case r @ Req("photo"   :: deviceId :: Nil, "",         PostRequest  ) => () => uploadPhoto(r, deviceId)
     case     Req("device"  :: deviceId :: Nil, "",         GetRequest   ) => () => readDevice(deviceId)
     case     Req("profile" :: deviceId :: Nil, "",         GetRequest   ) => () => readProfile(deviceId)
+    case     Req("json" :: "profile" :: deviceId :: Nil, "",         GetRequest   ) => readProfileJson(deviceId)
     case     Req("photo"   :: deviceId :: Nil, "",         GetRequest   ) => () => readPhotoFilename(deviceId)
     case     Req("photo"   :: fileName :: Nil, extension,  GetRequest   ) => () => readPhotoByFilename(fileName, extension)
     case     Req("photo"   :: deviceId :: slot :: Nil, "", GetRequest   ) => () => readPhotoBySlot(deviceId, slot)
@@ -184,6 +200,42 @@ object MyRest extends RestHelper {
   def sendPropose(fromId: String, toId: String) : Box[LiftResponse] = {res1300_propose(fromId, toId)}
   def sendSayYes(fromId: String, toId: String) : Box[LiftResponse] = {res1310_say_yes(fromId, toId)}
   def sendSayNo(fromId: String, toId: String) : Box[LiftResponse] = {res1320_say_no(fromId, toId)}
+
+  def readProfileJson(deviceId: String) = {
+
+    def profileToJson(p : Profile) = JObject(List(
+      JField("name", JString(p.name)),
+      JField("gender", JString(p.gender)),
+      JField("age", JInt(BigInt(p.age))),
+      JField("region", JString(p.region)),
+      JField("blood", JString(p.blood)),
+      JField("height", JInt(BigInt(p.height))),
+      JField("job", JString(p.job)),
+      JField("org", JString(p.org)),
+      JField("hobby", JString(p.hobby)),
+      JField("skill", JString(p.skill)),
+      JField("interest", JString(p.interest)),
+      JField("superior", JString(p.superior)),
+      JField("motto", JString(p.motto))
+    ))
+
+    Device.findByKey(deviceId) match {
+      case Full(d) =>
+        Profile.findByKey(d.profileId) match {
+          case Full(p) => JObject(List(
+            JField("response", JInt(2110)), 
+            JField("desc", JString("profile response ok")),
+            JField("profile", profileToJson(p))
+          ))
+    
+          case _ => JObject(List(JField("response", JInt(3111)), JField("desc", JString("profile not found"))))
+        }
+      case _ => JObject(List(JField("response", JInt(3110)), JField("desc", JString("device not found"))))
+    }
+
+    // JObject(List(JField("result", JString("fail"))))
+    // JObject(List(JField("name", JString(p.name))))
+  }
 
   // upload profile
   def res1000_upload_profile(request: Req, deviceId: String) : Box[LiftResponse] = {
